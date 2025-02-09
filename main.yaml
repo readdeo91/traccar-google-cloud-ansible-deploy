@@ -1,0 +1,17 @@
+- name: Setup google-cloud-freetier host
+  hosts: localhost
+  gather_facts: yes
+  roles:
+    - google_cloud
+
+- name: Create / Update google-cloud-freetier host
+  hosts: google-cloud-freetier
+  gather_facts: yes
+  roles:
+    - base_packages
+    - ddclient
+    - change_ssh_port
+    - ntfy
+    - traccar
+    - lego # Must be before nginx
+    - nginx

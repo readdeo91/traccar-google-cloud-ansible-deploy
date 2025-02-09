@@ -1,0 +1,2 @@
+ssl_certificate_file_name: ssl_cert
+ssl_certificate_key_file_name: ssl_cert.key

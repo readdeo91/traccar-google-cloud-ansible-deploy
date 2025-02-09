@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
+<properties>
+    <entry key='config.default'>./conf/default.xml</entry>
+    <!--
+    This is the main configuration file. All your configuration parameters should be placed in this file.
+    Default configuration parameters are located in the "default.xml" file. You should not modify it to avoid issues
+    with upgrading to a new version. Parameters in the main config file override values in the default file. Do not
+    remove "config.default" parameter from this file unless you know what you are doing.
+    For list of available parameters see following page: https://www.traccar.org/configuration-file/
+    -->
+
+    <!-- https://www.traccar.org/configuration-file/ -->
+
+    <entry key='database.driver'>org.h2.Driver</entry>
+    <entry key='database.url'>jdbc:h2:./data/database</entry>
+    <entry key='database.user'>sa</entry>
+    <entry key='database.password'></entry>
+
+    <entry key='web.port'>8100</entry>
+    <entry key='logger.level'>warning</entry> <!-- comment this out if you want to see every message from the devices in the logs. Default value: info -->
+
+    <entry key='protocols.enable'>osmand,freematics</entry>
+
+    <!-- <entry key='status.timeout'>3720L</entry> -->
+
+<!-- ntfy notifications -->
+    <entry key='notificator.types'>sms</entry>
+    <entry key='sms.http.url'>http://localhost:10360/traccar</entry>
+    <entry key='sms.http.template'>
+      {message}
+    </entry>
+    <entry key='sms.http.authorization'>Bearer tk_tq1p8n6abt6dtm26bq7zkkvtbxcuy</entry>
+
+</properties>

@@ -1,0 +1,28 @@
+- name: get info on a network
+  gcp_compute_network_info:
+    filters:
+      - name = {{ gc_network_name }}
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+  register: network
+
+- name: allow SSH traffic (port ssh-port)
+  google.cloud.gcp_compute_firewall:
+    name: allow-ssh-changed-port
+    network: "{{ network.resources[0] }}"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - "{{ ssh_port }}-{{ ssh_port }}"
+    source_ranges:
+      - "0.0.0.0/0"  # Allow SSH access from anywhere
+    direction: INGRESS
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+
+- name: Wait a few seconds
+  pause:
+    seconds: 10

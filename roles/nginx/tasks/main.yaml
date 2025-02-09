@@ -1,0 +1,83 @@
+- name: Install nginx
+  become: true
+  apt:
+    name: nginx
+    state: latest
+
+- name: Remove nginx config
+  become: true
+  file:
+    name: /etc/nginx
+    state: absent
+
+- name: Create nginx etc directory
+  become: true
+  file:
+    name: /etc/nginx
+    state: directory
+
+- name: Create ssl directory
+  become: true
+  file:
+    name: "/etc/nginx/ssl"
+    state: directory
+
+- name: Copy certificate to nginx
+  become: true
+  copy:
+    src: "/etc/.lego/certificates/"
+    dest: "/etc/nginx/ssl/"
+    remote_src: true
+
+- name: Install system nginx config
+  become: true
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    force: true
+
+- name: Create site-confs directory
+  become: true
+  file:
+    name: "/etc/nginx/site-confs"
+    state: directory
+
+- name: Template config site-confs/default.conf
+  become: true
+  template:
+    src: templates/site-confs-default.conf.j2
+    dest: /etc/nginx/site-confs/default.conf
+    force: true
+
+- name: Install ssl nginx config
+  become: true
+  template:
+    src: templates/ssl.conf.j2
+    dest: /etc/nginx/ssl.conf
+    force: true
+
+- name: Copy mime.types
+  become: true
+  copy:
+    src: "files/mime.types"
+    dest: "/etc/nginx/"
+    force: true
+
+- name: Copy traccar nginx config
+  become: true
+  template:
+    src: "templates/traccar.subdomain.conf"
+    dest: "/etc/nginx/proxy-confs/"
+    force: true
+
+- name: Copy ntfy config nginx
+  become: true
+  template:
+    src: "templates/ntfy.subdomain.conf"
+    dest: "/etc/nginx/proxy-confs/"
+    force: true
+
+- name: Reload nginx
+  become: true
+  service: name=nginx state=restarted
+

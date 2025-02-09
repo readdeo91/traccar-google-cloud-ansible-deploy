@@ -1,0 +1,79 @@
+- name: create a disk
+  google.cloud.gcp_compute_disk:
+    name: "{{ machine_name }}"
+    size_gb: "{{ disk_size }}"
+    source_image: "{{ gcp_image }}"
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: disk
+
+- name: create a network
+  google.cloud.gcp_compute_network:
+    name: "{{ gc_network_name }}"
+    auto_create_subnetworks: yes
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: network
+
+- name: create a address
+  google.cloud.gcp_compute_address:
+    name: "{{ address_name }}"
+    region: "{{ gcp_zone_short }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: address
+
+- name: create a instance
+  google.cloud.gcp_compute_instance:
+    name: "{{ machine_name }}"
+    machine_type: "{{ machine_type }}"
+    disks:
+    - auto_delete: 'false'
+      boot: 'true'
+      source: "{{ disk }}"
+    metadata:
+      startup-script-url: gs:://graphite-playground/bootstrap.sh
+      cost-center: '12345'
+    labels:
+      environment: production
+    network_interfaces:
+      - network: "{{ network }}"
+        access_configs:
+          - name: External NAT
+            nat_ip: "{{ address }}"
+            type: ONE_TO_ONE_NAT
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: instance
+
+- name: create a target pool
+  google.cloud.gcp_compute_target_pool:
+    name: targetpoolforwardingrule
+    region: "{{ gcp_zone_short }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: targetpool
+
+# Left here as an example for later use
+# - name: get info on a network
+#   gcp_compute_network_info:
+#     filters:
+#     - name = default
+#     project: "{{ gcp_project }}"
+#     auth_kind: "{{ gcp_cred_kind }}"
+#     service_account_file: "{{ gcp_cred_file }}"
+#   register: default_network
+
+- include_tasks: firewall-rules.yaml

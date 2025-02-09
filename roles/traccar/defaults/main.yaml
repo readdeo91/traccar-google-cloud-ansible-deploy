@@ -1,0 +1,1 @@
+traccar_extract_dir: "/home/{{ ansible_user }}/traccar"

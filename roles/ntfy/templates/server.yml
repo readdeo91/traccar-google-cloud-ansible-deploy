@@ -1,0 +1,7 @@
+base-url: "https://{{ domain_name }}"
+listen-http: ":{{ ntfy_port }}"
+cache-file: /var/lib/ntfy/cache.db
+cache-duration: "189h"
+auth-file: /var/lib/ntfy/user.db
+auth-default-access: "deny-all"
+web-root: disable

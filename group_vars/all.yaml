@@ -1,0 +1,17 @@
+# Google Cloud vars
+gcp_project: 
+gcp_cred_kind: serviceaccount
+gcp_cred_file: 
+gcp_zone: us-east1-b
+gcp_zone_short: us-east1
+gc_network_name: network-instance
+machine_name: freetier-04
+machine_type: e2-micro
+address_name: address-instance
+gcp_image: projects/ubuntu-os-cloud/global/images/family/ubuntu-minimal-2410-amd64
+compute_engine_user: 
+disk_size: 30
+
+# Software vars
+traccar_download_url: "https://github.com/traccar/traccar/releases/download/v6.6/traccar-linux-64-6.6.zip"
+ntfy_port: 10360

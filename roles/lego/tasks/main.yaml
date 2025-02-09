@@ -1,0 +1,33 @@
+- name: install lego
+  become: true
+  apt:
+    name: lego
+    state: latest
+
+- name: get cert with lego
+  become: true
+  command:
+    chdir: "/etc"
+    cmd: "lego --accept-tos --email {{ domain_email }} --dns dynu --domains {{ domain_name }} --domains *.{{ domain_name }} run"
+    creates: "/etc/.lego/certificates/{{ domain_name }}.crt"
+  environment:
+    DYNU_API_KEY: "{{ dynu_api_key }}"
+
+- name: install cronie
+  become: true
+  apt:
+    name: cronie
+    state: latest
+
+- name: Reload cronie
+  become: true
+  service:
+    name: cronie
+    state: restarted
+
+- name: Add letsencrypt cronjob for cert renewal
+  become: true
+  cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt --renew certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ domain_name }} && service nginx reload && cp -R /etc/.lego/certificates/ /etc/nginx/ssl/ && nginx -s reload

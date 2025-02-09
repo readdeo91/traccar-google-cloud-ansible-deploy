@@ -1,0 +1,61 @@
+- name: Check if port with default port exists in sshd_config
+  command: "grep -E '^#?Port 22' /etc/ssh/sshd_config"
+  register: result
+  ignore_errors: yes
+
+- name: Change SSH port
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port 22'
+    line: 'Port {{ ssh_port }}'
+  when: result.rc == 0
+
+- name: restart ssh
+  become: yes
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+  when: result.rc == 0
+
+- name: Wait a few seconds
+  pause:
+    seconds: 5
+  when: result.rc == 0
+
+- name: Read inventory file
+  ansible.builtin.slurp:
+    src: "{{ playbook_dir }}/inventory/all.yaml"
+  register: inventory_content
+  delegate_to: localhost
+
+- name: Parse inventory content as YAML
+  set_fact:
+    inventory_yaml: "{{ inventory_content.content | b64decode | from_yaml }}"
+  delegate_to: localhost
+
+- name: Update SSH port for freetier host
+  set_fact:
+    inventory_yaml: "{{ inventory_yaml | combine({'all': {'children': { group_names[0]: {'hosts': { inventory_hostname: {'ansible_ssh_port': ssh_port }}}}}}, recursive=True) }}"
+  delegate_to: localhost
+  when: result.rc == 0
+
+- name: Write inventory file
+  copy:
+    content: "{{ inventory_yaml | to_nice_yaml }}"
+    dest: "{{ playbook_dir }}/inventory/all.yaml"
+  delegate_to: localhost
+  when: result.rc == 0
+
+- name: Refresh inventory to ensure new instances exist in inventory
+  ansible.builtin.meta: refresh_inventory
+  when: result.rc == 0
+
+- name: Wait a few seconds
+  pause:
+    seconds: 5
+  when: result.rc == 0
+
+- name: reset ssh connection to allow changes to affect 'current login user'
+  meta: reset_connection
+  when: result.rc == 0

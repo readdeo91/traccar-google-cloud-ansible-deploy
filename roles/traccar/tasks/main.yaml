@@ -1,0 +1,54 @@
+- name: Check if /opt/traccar directory exists
+  ansible.builtin.stat:
+    path: "/opt/traccar"
+  register: traccar_dir
+
+- name: Create directory /tmp/traccar
+  become: true
+  ansible.builtin.file:
+    path: "{{ traccar_extract_dir }}"
+    mode: "777"
+    state: directory
+  when: not traccar_dir.stat.exists or 'traccar_install' in ansible_run_tags
+
+- name: Download Traccar archive
+  ansible.builtin.get_url:
+    url: "{{ traccar_download_url }}"
+    dest: "/tmp/traccar.zip"
+  when: not traccar_dir.stat.exists or 'traccar_install' in ansible_run_tags
+
+- name: Extract Traccar archive
+  ansible.builtin.unarchive:
+    src: "/tmp/traccar.zip"
+    dest: "{{ traccar_extract_dir }}"
+    remote_src: yes
+  when: not traccar_dir.stat.exists or 'traccar_install' in ansible_run_tags
+
+- name: Run traccar
+  become: true
+  shell: "{{ traccar_extract_dir }}/traccar.run"
+
+- name: Copy traccar config file server.yml
+  become: true
+  copy:
+    src: "files/traccar.xml"
+    dest: "/opt/traccar/conf/traccar.xml"
+
+- name: Remove installer
+  become: True
+  file:
+    path: "/tmp/traccar.zip"
+    state: absent
+
+- name: Restart traccar service
+  become: true
+  service:
+    name: traccar
+    state: restarted
+  when: not traccar_dir.stat.exists or 'traccar_install' in ansible_run_tags
+
+- name: Start traccar service
+  become: true
+  service:
+    name: traccar
+    state: "{{ traccar_service_status }}"

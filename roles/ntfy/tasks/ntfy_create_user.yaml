@@ -1,0 +1,50 @@
+- name: debug
+  debug:
+    var=ntfy_user
+
+- name: Ntfy create user
+  become: yes
+  expect:
+    command: "ntfy user add {{ ntfy_user.name }}"
+    responses:
+      'password:': "{{ ntfy_user.password }}"
+      'confirm:': "{{ ntfy_user.password }}"
+    timeout: 10
+  ignore_errors: true
+
+- name: Ntfy reset access of user
+  become: yes
+  shell: "ntfy access --reset {{ ntfy_user.name }}"
+  loop: "{{ ntfy_user.topics }}"
+  loop_control:
+    loop_var: ntfy_topic
+
+- name: Ntfy set access for user
+  become: yes
+  shell: "ntfy access {{ ntfy_user.name }} {{ ntfy_topic.name }} {{ ntfy_topic.permission }}"
+  loop: "{{ ntfy_user.topics }}"
+  loop_control:
+    loop_var: ntfy_topic
+
+- name: Ntfy get tokens of user
+  become: true
+  shell: "ntfy token list {{ ntfy_user.name }}"
+  timeout: 10
+  register: token_list_result
+
+- name: Ntfy create token for user
+  become: true
+  shell: "ntfy token add {{ ntfy_user.name }}"
+  timeout: 10
+  register: create_token_result
+  when: token_list_result.stderr_lines | length == 1
+
+- name: Set token information to variable
+  set_fact:
+    token_info: "{{ create_token_result.stderr.split(' ')[1] }}"
+  when: token_list_result.stderr_lines | length == 1
+
+- name: Print created token
+  debug:
+    var: token_info
+  when: token_list_result.stderr_lines | length == 1

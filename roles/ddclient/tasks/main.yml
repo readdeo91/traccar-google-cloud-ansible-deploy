@@ -1,0 +1,21 @@
+- name: Setup ddclient package
+  environment:
+    DEBIAN_FRONTEND=noninteractive # This skips the interactive configuration after the install
+  become: true
+  apt:
+    name:
+      - ddclient
+    state: present
+  tags: [ 'always' ]
+
+- name: Create /etc/ddclient directory
+  become: true
+  file:
+    path: /etc/ddclient
+    state: directory
+
+- name: Template config
+  become: true
+  ansible.builtin.template:
+    src: templates/ddclient.j2
+    dest: /etc/ddclient.conf

@@ -1,0 +1,22 @@
+ansible_ssh_user: 
+ssh_port: # Make it a random port above 10000 to be safe
+traccar_service_status: started
+ntfy_users:
+  - name: traccar-svc
+    topics:
+      - name: traccar
+        permission: write-only
+    password: 
+    reset_token: false
+  
+  - name: yourClientUser
+    topics:
+      - name: yourClientUsersTopic
+        permission: read-only
+      - name: traccar
+        permission: read-only
+    password: 
+    reset_token: false
+
+domain_name: 
+letsencrypt_email: 

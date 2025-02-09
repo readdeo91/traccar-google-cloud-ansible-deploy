@@ -1,0 +1,25 @@
+- name: Remove ntfy users tokens
+  ansible.builtin.debug:
+    msg:
+      - "Removing ntfy users tokens: {{ ntfy_user.name }}"
+
+- name: Ntfy get tokens of user
+  become: true
+  shell: "ntfy token list {{ ntfy_user.name }}"
+  timeout: 3
+  register: token_list_result
+
+- name: Extract tokens from the output
+  shell: echo "{{ token_list_result }}" | grep -oP 'tk_\w+'
+  register: extracted_tokens
+  ignore_errors: yes
+
+- name: debug extracted_tokens
+  debug:
+    var=extracted_tokens
+
+- name: Execute shell command for each token
+  become: true
+  shell:
+    cmd: "ntfy token remove {{ ntfy_user.name }} {{ item }}"
+  loop: "{{ extracted_tokens.stdout_lines }}"

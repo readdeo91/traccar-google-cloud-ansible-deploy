@@ -1,0 +1,24 @@
+- name: Setup google-cloud-freetier host ssh ingress allow
+  hosts: localhost
+  gather_facts: yes
+  roles:
+    - google_cloud_ssh_ingress_allow
+
+- name: Create / Update google-cloud-freetier host
+  hosts: google-cloud-freetier
+  gather_facts: yes
+  roles:
+    - base_packages
+    - ddclient
+    - change_ssh_port
+    - mariadb
+    - ntfy
+    - traccar
+    - lego # Must be before nginx
+    - nginx
+
+- name: Deny ssh port access
+  hosts: localhost
+  gather_facts: yes
+  roles:
+    - google_cloud_ssh_ingress_deny
