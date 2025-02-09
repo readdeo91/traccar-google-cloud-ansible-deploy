@@ -1,3 +1,6 @@
+# Deploy Traccar to a Google Cloud freetier vm with Ntfy notifications using Ansible
+**It's your responsibility to check Google Cloud's free tier requirements and update the playbook accordingly to prevent getting charged. You also need to consider other requirements of free tier to make sure you don't pay, for example outbound traffic. You also must be sure that your ssh is NOT on the default port and you do note expose it to the internet unnecessarily with a firewall rule. The playbook takes care of this part. The maintenance.yaml opens the firewall rule on start and deletes it when it is successfully finished, but you should always check it before leaving your vm running unattended.**
+
 ## Prerequisites
 ### Domain
 You have to get a domain for yourself.
